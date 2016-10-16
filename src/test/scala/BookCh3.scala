@@ -89,6 +89,22 @@ class BookCh3 extends FlatSpec with Matchers {
       case Nil => 0
       case _ => foldRight(l, 0)((i,acc) => acc + 1)
     }
+
+    def reverse[A](l: List[A]): List[A] = List.foldLeft(l, Nil:List[A])((acc, el) => Cons(el,acc)) 
+
+    def map[A,B](as: List[A])(f: A=> B): List[B] = {
+      List.foldLeft(List.reverse(as), Nil: List[B])((acc:List[B], el: A) => Cons(f(el), acc))
+    }
+
+    def filter[A](as: List[A])(f: A=> Boolean): List[A] = {
+      List.foldLeft(List.reverse(as), Nil: List[A])((acc:List[A], el: A) => {
+          el match {
+            case el if f(el) => Cons(el, acc)
+            case _ => acc
+          }
+        }
+      )
+    }
   }
 
 
@@ -229,6 +245,30 @@ class BookCh3 extends FlatSpec with Matchers {
     }
 
     selectMany(List(List(1,2), List(3,4), List(4,5))) should be (List(1,2,3,4,4,5))
+  }
+
+  "Ex3.16" should "add 1 to each element of the list" in {
+    def addOne(as: List[Int]): List[Int] = {
+      List.foldRight(as, Nil:List[Int])((el:Int, acc:List[Int]) => Cons(el + 1, acc))
+    }
+
+    addOne(List(1,2,3)) should be (List(2,3,4))
+  }
+
+  "Ex3.17" should "produce list of strings from list of Doubles" in {
+    def stringify(as: List[Double]): List[String] = {
+      List.foldRight(as, Nil:List[String])((el:Double, acc:List[String]) => Cons(el.toString, acc))
+    }
+
+    stringify(List(1.0,2.0,3.0)) should be (List("1.0", "2.0", "3.0"))
+  }
+
+  "Ex3.18" should "implement map function" in {
+    List.map(List(1,2,3))(_+1) should be (List(2,3,4)) 
+  }
+
+  "Ex3.19" should "implement filter function" in {
+    List.filter(List(1,2,3,4))(_%2==0) should be (List(2,4))  
   }
 
 }
