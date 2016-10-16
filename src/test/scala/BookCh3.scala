@@ -73,9 +73,22 @@ class BookCh3 extends FlatSpec with Matchers {
       }
     }
 
+    @annotation.tailrec
+    def foldLeft[A,B](as: List[A], z:B)(f:(B, A) => B): B = {
+      as match {
+        case Nil => z
+        case Cons(x,xs) => foldLeft(xs, f(z,x))(f)
+      } 
+    }
+
     def sum2(ns: List[Int]) = foldRight(ns, 0)((x, y) => x + y)
 
     def product2(ns: List[Double]) = foldRight(ns, 1.0)(_ * _)
+
+    def length[A](l: List[A]) = l match {
+      case Nil => 0
+      case _ => foldRight(l, 0)((i,acc) => acc + 1)
+    }
   }
 
 
@@ -148,6 +161,40 @@ class BookCh3 extends FlatSpec with Matchers {
     }
 
     foldRightWhile(lut, 0, ccCondition)(_ + _) should be (6)
+  }
+
+  "Ex3.8" should "check what happens when combining foldRight with Cons" in {
+    List.foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_)) should be (List(1,2,3))
+  }
+
+  "Ex3.9" should "implement a length function using foldRight" in {
+    List.length(List(1,2,3)) should be (3)
+    List.length(List(1)) should be (1)
+    List.length(Nil) should be (0)
+  }
+
+  "Ex3.10" should "implement foldLeft with tail recursion" in {
+    List.foldLeft(List(1,2,3), 0)(_ + _) should be (6)
+  }
+
+  "Ex3.11" should "implement sum, product and length using foldLeft" in {
+    def sum(l: List[Int]) = List.foldLeft(l, 0)(_+_)
+
+    sum(List(1,2,3)) should be (6)
+
+    def product(l: List[Int]) = List.foldLeft(l, 1)(_*_)
+
+    product(List(1,2,3)) should be (6)
+
+    def length[A](l: List[A]): Int = List.foldLeft(l, 0)((acc, el) => acc + 1)
+
+    length(List(1,2,3)) should be (3)
+  }
+
+  "Ex3.12" should "implement reverse using a fold" in {
+    def reverse[A](l: List[A]): List[A] = List.foldLeft(l, Nil:List[A])((acc, el) => Cons(el,acc)) 
+
+    reverse(List(1,2,3)) should be (List(3,2,1))
   }
   
 }
