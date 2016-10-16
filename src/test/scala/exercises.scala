@@ -58,5 +58,16 @@ class BookCh2 extends FlatSpec with Matchers {
 
     uncurry(f)(2, 3) should be (5)
   }
+
+  "Ex2.5" should "implement a function composing two other functions" in {
+    def compose[A,B,C](f: B => C, g: A => B): A => C = {
+      (a:A) => f(g(a))
+    }
+    def addOne(a: Int) = a + 1
+    def multiplyByTwo(a: Int) = a * 2
+
+    compose(addOne, multiplyByTwo)(1) should be (3)
+
+  }
   
 }
