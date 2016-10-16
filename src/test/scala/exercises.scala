@@ -14,7 +14,6 @@ class BookCh2 extends FlatSpec with Matchers {
           case _ => fib_int(idx - 1, b, a + b)
         }
       }
-
       fib_int(n, 0, 1)
     }
 
@@ -32,9 +31,7 @@ class BookCh2 extends FlatSpec with Matchers {
         else if (!ordered(as(n), as(n+1))) false
         else isSortedFrom(n+1)
       }
-
       isSortedFrom(0)
-
     }
 
     isSorted(Array(1,2,3), (a:Int,b:Int) => {a < b}) should be (true)
@@ -42,8 +39,24 @@ class BookCh2 extends FlatSpec with Matchers {
     isSorted(Array(2,1), (a:Int,b:Int) => {a < b}) should be (false)
     isSorted(Array(2,1,3), (a:Int,b:Int) => {a < b}) should be (false)
     isSorted(Array(1,3,2), (a:Int,b:Int) => {a < b}) should be (false)
+  }
 
+  "Ex2.3" should "implement a currying function" in {
+    def curry[A,B,C](f: (A,B) => C): A => (B => C) = {
+      (a:A) => ((b:B) => f(a, b))
+    }
 
+    curry((a:Int, b:Int) => (a+b))(2)(3) should be (5)
+  }
+
+  "Ex2.4" should "implement a uncurrying function" in {
+    def uncurry[A,B,C](f: A => B => C): (A, B) => C = {
+      (a: A, b: B) => f(a)(b)
+    }
+
+    def f: Int => Int => Int = a => b => a + b
+
+    uncurry(f)(2, 3) should be (5)
   }
   
 }
