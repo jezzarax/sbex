@@ -65,6 +65,17 @@ class BookCh3 extends FlatSpec with Matchers {
         case Cons(h, t) => Cons(el, t)
       }
     }
+
+    def foldRight[A,B](as:List[A], z:B)(f:(A,B) => B): B = {
+      as match {
+        case Nil => z
+        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+      }
+    }
+
+    def sum2(ns: List[Int]) = foldRight(ns, 0)((x, y) => x + y)
+
+    def product2(ns: List[Double]) = foldRight(ns, 1.0)(_ * _)
   }
 
 
@@ -108,6 +119,35 @@ class BookCh3 extends FlatSpec with Matchers {
     List.init(List(1,2,3)) should be (List(1,2))
     List.init(List(1)) should be (Nil)
     List.init(Nil) should be (Nil)
+  }
+
+  "Ex3.7" should "consider the ways to short circuit the foldRight recursion" in {
+    val lut = List(1,2,3,4,5)
+    val ccCondition = (a: Int) => a > 3
+    def takeWhile[A](l: List[A], cond: A => Boolean): List[A] = {
+      l match {
+        case Nil => Nil
+        case Cons(h, _) if cond(h) => Nil
+        case Cons(h, t) => Cons(h, takeWhile(t, cond))
+      }
+    }
+    
+    takeWhile(lut, ccCondition) should be (List(1,2,3))
+    List.foldRight(takeWhile(lut, ccCondition), 0)(_ + _) should be (6)
+
+    def foldRightWhile[A,B](as:List[A], z:B, cond: A => Boolean)(f:(A,B) => B): B = {
+      as match {
+        case Nil => z
+        case Cons(x, xs) => {
+          if(!cond(x))
+            f(x, foldRightWhile(xs, z, cond)(f))
+          else
+            z
+        }
+      }
+    }
+
+    foldRightWhile(lut, 0, ccCondition)(_ + _) should be (6)
   }
   
 }
