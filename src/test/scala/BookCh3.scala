@@ -29,6 +29,36 @@ class BookCh3 extends FlatSpec with Matchers {
       }
     }
 
+    @annotation.tailrec
+    def drop[A](l: List[A], n: Int): List[A] = {
+      n match {
+        case 0 => l
+        case x if x > 0 => drop(tail(l), x - 1)
+      }
+    }
+
+    @annotation.tailrec
+    def dropWhile[A](l: List[A], f: A => Boolean): List[A] = {
+      l match {
+        case Nil => l
+        case Cons(h, t) => {
+          if (!f(h)) {
+            l
+          } else {
+            dropWhile(t, f)
+          }
+        }
+      }
+    }
+
+    def init[A](l: List[A]): List[A] = {
+      l match {
+        case Nil => Nil
+        case Cons(h, Nil) => Nil
+        case Cons(h, t) => Cons(h, init(t))
+      }
+    }
+
     def setHead[A](el: A, l: List[A]) = {
       l match {
         case Nil => List(el)
@@ -60,6 +90,24 @@ class BookCh3 extends FlatSpec with Matchers {
     List.setHead(1, List(2,2,3)) should be (List(1,2,3))
     List.setHead(1, List(2)) should be (List(1))
     List.setHead(1, Nil) should be (List(1))
+  }
+
+  "Ex3.4" should "implement a drop function that drops n first elements of the list" in {
+    List.drop(List(1,2,3), 0) should be (List(1,2,3))
+    List.drop(List(1,2,3), 1) should be (List(2,3))
+    List.drop(List(1,2,3), 2) should be (List(3))
+    List.drop(List(1,2,3), 3) should be (Nil)
+    List.drop(List(1,2,3), 4) should be (Nil)
+  }
+
+  "Ex3.5" should "implement a dropWhile function that drops elements until condition is fulfilled" in {
+    List.dropWhile(List(1,3,5,6), (x: Int) => {x % 2 != 0}) should be (List(6))
+  }
+
+  "Ex3.6" should "implement init function that returns a list from an input list without the last element" in {
+    List.init(List(1,2,3)) should be (List(1,2))
+    List.init(List(1)) should be (Nil)
+    List.init(Nil) should be (Nil)
   }
   
 }
