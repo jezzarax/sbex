@@ -67,7 +67,5 @@ class BookCh2 extends FlatSpec with Matchers {
     def multiplyByTwo(a: Int) = a * 2
 
     compose(addOne, multiplyByTwo)(1) should be (3)
-
   }
-  
 }
