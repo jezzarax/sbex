@@ -28,13 +28,17 @@ class BookCh3 extends FlatSpec with Matchers {
         case Cons(h, t) => t
       }
     }
+
+    def setHead[A](el: A, l: List[A]) = {
+      l match {
+        case Nil => List(el)
+        case Cons(h, t) => Cons(el, t)
+      }
+    }
   }
 
 
-
   "Ex3.1" should "implement a recursive fibonacci function with tail recursion" in {
-
-
     val x = List(1,2,3,4,5) match {
       case Cons(x, Cons(2, Cons(4, _))) => x
       case Nil => 42
@@ -46,12 +50,16 @@ class BookCh3 extends FlatSpec with Matchers {
     x should be (3)
   }
 
-  "Ex2.3" should "implement a tail function" in {
-
+  "Ex3.2" should "implement a tail function" in {
     List.tail(List(1,2,3)) should be (List(2,3))
     List.tail(List(1)) should be (Nil)
     List.tail(Nil) should be (Nil)
+  }
 
+  "Ex3.3" should "implement a setHead function that replaces head with another element" in {
+    List.setHead(1, List(2,2,3)) should be (List(1,2,3))
+    List.setHead(1, List(2)) should be (List(1))
+    List.setHead(1, Nil) should be (List(1))
   }
   
 }
