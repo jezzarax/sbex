@@ -66,7 +66,7 @@ class BookCh3 extends FlatSpec with Matchers {
       }
     }
 
-    def foldRight[A,B](as:List[A], z:B)(f:(A,B) => B): B = {
+    def foldRight[A,B](as:List[A], z:B)(f:(A, B) => B): B = {
       as match {
         case Nil => z
         case Cons(x, xs) => f(x, foldRight(xs, z)(f))
@@ -196,5 +196,39 @@ class BookCh3 extends FlatSpec with Matchers {
 
     reverse(List(1,2,3)) should be (List(3,2,1))
   }
-  
+
+  "Ex3.13" should "implement foldLeft through foldRight and vice verca" in {
+    def foldRightViaFoldLeft[A,B](as:List[A], z:B)(f:(A,B) => B): B = {
+      val reversed = List.foldLeft(as, Nil:List[A])((acc, el) => Cons(el,acc))
+      List.foldLeft(reversed, z)((acc, el) => f(el,acc)) 
+    }
+
+    foldRightViaFoldLeft(List(1,2,3), Nil:List[Int])(Cons(_,_)) should be (List(1,2,3))
+
+    def foldLeftViaRight[A,B](as:List[A], z:B)(f:(A, B) => B): B = {
+      List.foldRight(as, (b:B) => b)((a,g) => b => g(f(a,b)))(z)
+    }
+
+    foldLeftViaRight(List(1,2,3), 0)(_ + _) should be (6)
+  }
+
+  "Ex3.14" should "implement appending of one list to another" in {
+    def append[A](l1: List[A], l2: List[A]): List[A] = {
+      List.foldRight(l1, l2)(Cons(_,_))
+    }
+
+    append(List(1,2,3), List(4,5,6)) should be (List(1,2,3,4,5,6))
+  }
+
+  "Ex3.15" should "flatten multiple lists into one" in {
+    def selectMany[A](as: List[List[A]]): List[A] = {
+      List.foldRight(as, Nil:List[A])((el, acc) => {
+        List.foldRight(el, acc)((el:A, acc:List[A]) => Cons(el, acc))
+        }
+      )
+    }
+
+    selectMany(List(List(1,2), List(3,4), List(4,5))) should be (List(1,2,3,4,4,5))
+  }
+
 }
