@@ -105,6 +105,13 @@ class BookCh3 extends FlatSpec with Matchers {
         }
       )
     }
+
+    def flatMap[A,B](as: List[A])(f:A => List[B]): List[B] = {
+      List.foldRight(as, Nil:List[B])((el, acc) => {
+        List.foldRight(f(el), acc)((el:B, acc:List[B]) => Cons(el, acc))
+        }
+      )
+    }
   }
 
 
@@ -269,6 +276,10 @@ class BookCh3 extends FlatSpec with Matchers {
 
   "Ex3.19" should "implement filter function" in {
     List.filter(List(1,2,3,4))(_%2==0) should be (List(2,4))  
+  }
+
+  "Ex3.20" should "implement flatMap function" in {
+    List.flatMap(List(1,2,3))(i => List(i,i)) should be (List(1,1,2,2,3,3))
   }
 
 }
