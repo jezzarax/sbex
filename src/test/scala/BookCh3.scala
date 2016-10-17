@@ -112,6 +112,15 @@ class BookCh3 extends FlatSpec with Matchers {
         }
       )
     }
+
+    def zipWith[A,B](l1: List[A], l2: List[A])(f:(A, A) => B): List[B] = {
+      (l1,l2) match {
+        case (Cons(h1, t1), Cons(h2,t2)) => Cons(f(h1,h2), zipWith(t1,t2)(f))
+        case (Nil, Nil) => Nil
+        case (_, Nil) => Nil
+        case (Nil, _) => Nil
+      }
+    }
   }
 
 
@@ -280,6 +289,38 @@ class BookCh3 extends FlatSpec with Matchers {
 
   "Ex3.20" should "implement flatMap function" in {
     List.flatMap(List(1,2,3))(i => List(i,i)) should be (List(1,1,2,2,3,3))
+  }
+
+  "Ex3.21" should "implement filter via flatMap" in {
+    def filterViaFlatMap[A](as: List[A])(f: A=> Boolean): List[A] = {
+
+      List.flatMap(as)(el =>
+          el match {
+            case el if f(el) =>  List(el)
+            case _ => Nil
+          }
+        )
+    }
+
+    filterViaFlatMap(List(1,2,3,4))(_%2==0) should be (List(2,4))   
+  }
+
+  "Ex3.22" should "implement per-element addition of two lists" in {
+    def elementwiseAdd(l1: List[Int], l2: List[Int]): List[Int] = {
+      (l1,l2) match {
+        case (Cons(h1, t1), Cons(h2,t2)) => Cons(h1+h2, elementwiseAdd(t1,t2))
+        case (Nil, Nil) => Nil
+        case (_, Nil) => Nil
+        case (Nil, _) => Nil
+      }
+    }
+
+    elementwiseAdd(List(1,2,3), List(2,3,4)) should be (List(3,5,7))
+    elementwiseAdd(List(1,2,3), List(2,3,4,100)) should be (List(3,5,7))
+  }
+
+  "Ex3.23" should "implement zipWith" in {
+    List.zipWith(List(1,2,3), List(2,3,4))((a:Int,b:Int) => (a,b)) should be (List((1,2),(2,3),(3,4)))
   }
 
 }
