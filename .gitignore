@@ -20,3 +20,6 @@ server.pid
 /dist/
 .cache
 .vagrant
+.ensime
+.ensime_cache/
+*.sublime*
