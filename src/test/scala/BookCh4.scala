@@ -60,4 +60,20 @@ class BookCh4 extends FlatSpec with Matchers {
 		b.filter(_.length == 6) should be (None)
 		b.filter(_.length == 5) should be (None)
 	}
+
+	"Ex4.2" should "implement a variance function" in {
+		def variance(xs: Seq[Double]): Option[Double] = {
+			def mean(xs: Seq[Double]): Option[Double] = {
+				xs.length match {
+					case 0 => None
+					case _ => Some(xs.sum/xs.length)
+				}
+			}
+			mean(xs).flatMap(m => mean(xs.map(x => { math.pow(x - m, 2) })))
+		}
+
+		variance(List(1.0, 2.0, 3.0, 4.0)) should be (Some(1.25))
+		variance(List(0.0)) should be (Some(0.0))
+		variance(List[Double]()) should be (None)
+	}
 }
