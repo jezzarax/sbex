@@ -76,4 +76,30 @@ class BookCh4 extends FlatSpec with Matchers {
 		variance(List(0.0)) should be (Some(0.0))
 		variance(List[Double]()) should be (None)
 	}
+
+	"Ex4.3" should "implement map2 function operating on two Option instances" in {
+
+		def map2[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] = {
+			a.flatMap(ai => b.map(bi => f(ai, bi)))
+		}
+
+		map2(Some(1), Some("2"))(_.toString + _) should be (Some("12"))
+		map2(None, Some("2"))(_.toString + _) should be (None)
+		map2(Some(1), None)(_.toString + _) should be (None)
+		map2(None, None)(_.toString + _) should be (None)
+	}
+
+	"Ex4.4" should "implement sequence function combining List of Options into an Option from List" in {
+		def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+			a match {
+				case h :: t => h.flatMap(hi => sequence(t).map( hi :: _ ))
+				case Nil => Some(Nil)
+			}
+		}
+
+		sequence(List(Some(1), Some(2))) should be (Some(List(1,2)))
+		sequence(List(Some(1), None, Some(2))) should be (None)
+		sequence(Nil) should be (Some(Nil))
+	}
+
 }
