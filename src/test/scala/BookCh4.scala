@@ -37,6 +37,10 @@ class BookCh4 extends FlatSpec with Matchers {
 	case class Some[+A](get: A) extends Option[A]
 	case object None extends Option[Nothing]
 
+	def Try[A](a: => A): Option[A] = 
+		try Some(a)
+		catch { case e: Exception => None }
+
 	"Ex4.1" should "implement map, flatMap, getOrElse, orElse and filter methods" in {
 		val a:Option[String] = Some("String")
 		val b:Option[String] = None
@@ -100,6 +104,21 @@ class BookCh4 extends FlatSpec with Matchers {
 		sequence(List(Some(1), Some(2))) should be (Some(List(1,2)))
 		sequence(List(Some(1), None, Some(2))) should be (None)
 		sequence(Nil) should be (Some(Nil))
+	}
+
+	"Ex4.5" should "implement traverse function without using map/sequence combination" in {
+		def traverse[A,B](a: List[A])(f:A => Option[B]): Option[List[B]] = {
+			a match {
+				case h :: t => f(h).flatMap(hi => traverse(t)(f).map( hi :: _ ))
+				case Nil => Some(Nil)
+			}
+		}
+
+		
+		traverse(List("1", "2"))(i => Try(i.toInt)) should be (Some(List(1,2)))
+		traverse(List("1", "a"))(i => Try(i.toInt)) should be (None)
+		traverse[String, Int](Nil)(i => Try(i.toInt)) should be (Some(Nil))
+
 	}
 
 }
