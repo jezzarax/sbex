@@ -121,4 +121,89 @@ class BookCh4 extends FlatSpec with Matchers {
 
 	}
 
+	sealed trait Either[+E, +A] {
+		def map[B](f: A => B): Either[E, B] = {
+			this match {
+				case Right(v) => Right(f(v))
+				case Left(v) => Left(v)
+			}
+		}
+		def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = {
+			this match {
+				case Right(v) => f(v)
+				case Left(v) => Left(v)
+			}
+		}
+		def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = {
+			this match {
+				case Right(v) => Right(v)
+				case _ => b
+			}
+		}
+		def map2[EE >: E, B, C](b: => Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
+			this.flatMap(ai => b.map(bi => f(ai,bi)))
+		}
+	}
+
+	case class Left[+E](value: E) extends Either[E, Nothing]
+	case class Right[+A](value: A) extends Either[Nothing, A]
+
+	"Ex4.6" should "implement map, flatMap, orElse and map2 methods for Either monad" in {
+		val a:Either[String, Int] = Left("String")
+		val b:Either[String, Int] = Right(5)
+
+		a.map(_.toString) should be (Left("String"))
+		b.map(_.toString) should be (Right("5"))
+
+		a.flatMap(v => Right(v.toString)) should be (Left("String"))
+		b.flatMap(v => Right(v.toString)) should be (Right("5"))
+
+		a.orElse(Right("Something is not right")) should be (Right("Something is not right"))
+		b.orElse(Left("whatever")) should be (Right(5))
+
+		a.map(_.toString) should be (Left("String"))
+		b.map(_.toString) should be (Right("5"))
+
+		a.map2(Left(" is left"))(_+_) should be (Left("String"))
+		a.map2(Right(10))(_+_) should be (Left("String"))
+
+		b.map2(Left(" is left"))(_+_) should be (Left(" is left"))
+		b.map2(Right(10))(_+_) should be (Right(15))
+
+	}
+
+	"Ex4.7" should "implement sequence and traverse functions for Either" in {
+		def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = {
+			es match {
+				case h :: t => h.flatMap(hi => sequence(t).map( hi :: _ ))
+				case Nil => Right(Nil)
+			}
+		}
+
+		def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] = {
+			as match {
+				case h :: t => f(h).flatMap(hi => traverse(t)(f).map( hi :: _ ))
+				case Nil => Right(Nil)
+			}
+		}
+
+		sequence(List(Right(1), Right(2))) should be (Right(List(1,2)))
+		sequence(List(Right(1), Left("not right"), Right(2))) should be (Left("not right"))
+		sequence(List(Right(1), Left("not right"), Left("totally not right"))) should be (Left("not right"))
+		sequence(Nil) should be (Right(Nil))		
+
+		def tryToParse(a: String): Either[String, Int] = {
+			Try(a.toInt) match {
+				case Some(n) => Right(n)
+				case _ => Left(a)
+			}
+		}
+
+
+		traverse(List("1", "2"))(tryToParse) should be (Right(List(1,2)))
+		traverse(List("1", "a"))(tryToParse) should be (Left("a"))
+		traverse[String, String, Int](Nil)(tryToParse) should be (Right(Nil))
+
+	}
+
 }
