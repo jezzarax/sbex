@@ -28,6 +28,33 @@ class BookCh5 extends FlatSpec with Matchers {
 	 			case Empty => Empty
 	 		}
 	 	}
+	 	def takeWhile(p: A => Boolean): Stream[A] = {
+	 		this match {
+	 			case Cons(h, t) => if (!p(h())) Empty else Cons(h, () => t().takeWhile(p))
+	 			case Empty => Empty
+	 		}
+	 	}
+
+	 	def forAll(p: A => Boolean): Boolean = {
+	 		this match {
+	 			case Cons(h, t) => if (!p(h())) false else t().forAll(p)
+	 			case Empty => true
+	 		}
+	 	}
+
+	 	def foldRight[B](z: => B) (f: (A, => B) => B): B = {
+	 		this match {
+	 			case Cons(h, t) =>  f(h(), t().foldRight(z)(f))
+	 			case _ => z
+	 		}
+	 	}
+
+	 	def takeWhileFR(p: A => Boolean): Stream[A] = {
+	 		this.foldRight(Empty: Stream[A])((el, acc) => if (!p(el)) Empty else Cons(() => el, () => acc))
+	 	}
+
+	 	def headOptionFR: Option[A] = 
+	 		this.foldRight(None:Option[A])((el, acc) => Some(el))
 	}
 
 	case object Empty extends Stream[Nothing]
@@ -47,6 +74,8 @@ class BookCh5 extends FlatSpec with Matchers {
 
 	}
 
+	val ones: Stream[Int] = Stream.cons(1, ones)
+
 	"Ex5.1" should "implement toList function that produces list from a stream" in {
 		Stream(1,2,3,4,5).toList should be (List(1,2,3,4,5))
 		Stream().toList should be (Nil)
@@ -59,5 +88,27 @@ class BookCh5 extends FlatSpec with Matchers {
 
 		Stream(1,2,3,4).drop(2).toList should be (List(3,4))
 		Stream(1,2,3,4).drop(5).toList should be (Nil)
+	}
+
+	"Ex5.3" should "implement takeWhile" in {
+		Stream(1,2,7,3).takeWhile(_<5).toList should be (List(1,2))
+		Stream(1,2).takeWhile(_>5).toList should be (Nil)
+	}
+
+	"Ex5.4" should "implement forAll" in {
+		Stream(1,2,7,3).forAll(_<5) should be (false)
+		Stream(1,2,3).forAll(_<5) should be (true)
+
+		ones.forAll(_ == 0) should be (false)
+	}
+
+	"Ex5.3" should "implement takeWhile using foldRight" in {
+		Stream(1,2,7,3).takeWhileFR(_<5).toList should be (List(1,2))
+		Stream(1,2).takeWhileFR(_>5).toList should be (Nil)
+	}
+
+	"Ex5.4" should "implement headOption using foldRight" in {
+		Stream(1,2,3).headOptionFR should be (Some(1))
+		Stream().headOptionFR should be (None)
 	}
 }
