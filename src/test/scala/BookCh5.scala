@@ -55,6 +55,18 @@ class BookCh5 extends FlatSpec with Matchers {
 
 	 	def headOptionFR: Option[A] = 
 	 		this.foldRight(None:Option[A])((el, acc) => Some(el))
+
+	 	def map[B](f: A => B): Stream[B] = 
+	 		this.foldRight(Empty: Stream[B])((el, acc) => Cons(() => f(el), () => acc))
+	 	
+	 	def filter(f: A => Boolean): Stream[A] = 
+	 		this.foldRight(Empty: Stream[A])((el, acc) => if(f(el)) Cons(() => el, () => acc) else acc)
+	 	def append[B>:A](s: => Stream[B]): Stream[B] = 
+	 		this.foldRight(s)((el, acc) => Cons(() => el, () => acc))
+	 	def flatMap[B](f: A => Stream[B]): Stream[B] = 
+	 		this.foldRight(Empty: Stream[B])((el, acc) => {
+	 			f(el).append(acc)
+	 		})
 	}
 
 	case object Empty extends Stream[Nothing]
@@ -102,13 +114,22 @@ class BookCh5 extends FlatSpec with Matchers {
 		ones.forAll(_ == 0) should be (false)
 	}
 
-	"Ex5.3" should "implement takeWhile using foldRight" in {
+	"Ex5.5" should "implement takeWhile using foldRight" in {
 		Stream(1,2,7,3).takeWhileFR(_<5).toList should be (List(1,2))
 		Stream(1,2).takeWhileFR(_>5).toList should be (Nil)
 	}
 
-	"Ex5.4" should "implement headOption using foldRight" in {
+	"Ex5.6" should "implement headOption using foldRight" in {
 		Stream(1,2,3).headOptionFR should be (Some(1))
 		Stream().headOptionFR should be (None)
+	}
+
+	"Ex5.7" should "implement map, filter, append and flatMap using foldRight" in {
+
+		Stream(1,2,3).map(_+2).toList should be (List(3,4,5))
+		Stream(1,2,3).filter(_%2 != 0).toList should be (List(1,3))
+		Stream(1,2).append(Stream(3,4)).toList should be (List(1,2,3,4))
+		Stream(1,2).flatMap(e => Stream(e, e+1)).toList should be (List(1,2,2,3))
+
 	}
 }
