@@ -70,14 +70,16 @@ class BookCh6 extends FlatSpec with Matchers {
         intsInt(num, rng, List())
     }
 
-    type Rand[+A] = RNG => (A, RNG)
+    type State[S, +A] = S => (A, S)
+
+    type Rand[+A] = State[RNG, A]
 
     def int: Rand[Int] = rng => rng.nextInt
 
-    def unit[A](a: A): Rand[A] =
-        rng => (a, rng)
+    def unit[S, A](a: A): State[S,A] =
+        state => (a, state)
 
-    def map[A,B](s: Rand[A])(f: A => B): Rand[B] = 
+    def map[S,A,B](s: State[S,A])(f: A => B): State[S,B] = 
         rng => {
             val (a, rng2) = s(rng)
             (f(a), rng2)
@@ -96,22 +98,21 @@ class BookCh6 extends FlatSpec with Matchers {
             (f(a, b), rng2)
         }        
 
-    def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = 
-        rng => 
-            fs.foldRight((List[A](), rng))((el, acc) => {
+    def sequence[S, A](fs: List[State[S,A]]): State[S, List[A]] = 
+        state => 
+            fs.foldRight((List[A](), state))((el, acc) => {
                 acc match {
-                    case (els, oldRngState) => {
-                        val (a, newRngState) = el(oldRngState)
-                        (a :: els, newRngState)
+                    case (els, oldState) => {
+                        val (a, newState) = el(oldState)
+                        (a :: els, newState)
                     }
                 }
-                
             })
 
-    def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = 
-        rng => {
-            val (a, rng1) = f(rng)
-            g(a)(rng1)
+    def flatMap[S,A,B](f: State[S,A])(g: A => State[S,B]): State[S,B] = 
+        state => {
+            val (a, state1) = f(state)
+            g(a)(state1)
             
         }
 
@@ -151,7 +152,7 @@ class BookCh6 extends FlatSpec with Matchers {
 
     "Ex6.7.1" should "implement a sequence function that produces a list of random values" in {
         sequence(List.fill(5)(nonNegativeInt _))(RNGMock(10))._1 should be (List(10,10,10,10,10))
-        sequence(List(unit(1), unit(2), unit(3)))(RNGMock(10))._1 should be (List(1,2,3))
+        sequence[RNG, Int](List(unit(1), unit(2), unit(3)))(RNGMock(10))._1 should be (List(1,2,3))
     }
 
     "Ex6.7.2" should "implement ints using sequence" in {
@@ -188,9 +189,10 @@ class BookCh6 extends FlatSpec with Matchers {
             flatMap(ra)(a => map(rb)(b => f(a, b)))
 
         map2UsingFlatMap2(double, nonNegativeInt)((a,b) => (b,a))(RNGMock(10))._1 should be ((10, 0.1))
-        
-
     }
 
+    "Ex6.10" should "convert map, flatMap, unit and sequence to use the State type" in {
+        succeed 
+    }
 
 }

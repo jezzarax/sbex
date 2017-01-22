@@ -1,8 +1,8 @@
-name := """scalaBookExercises_ch2"""
+name := """scalaBookExercises"""
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.0" % "test"
